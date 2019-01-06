@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 
 #include <QCommonStyle>
 #include <QDesktopWidget>
@@ -7,6 +6,8 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+
+#include <iostream>
 
 main_window::main_window(QWidget *parent)
     : QMainWindow(parent)
@@ -26,22 +27,30 @@ main_window::main_window(QWidget *parent)
     connect(ui->actionScan_Directory, &QAction::triggered, this, &main_window::select_directory);
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
     connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
+    connect(ui->actionAbout, &QAction::triggered, this, &main_window::show_about_dialog);
 
-    scan_directory(QDir::homePath());
+//    scan_directory(QDir::homePath());
 }
 
 main_window::~main_window()
-{}
+{
+    delete ui;
+}
+
+void main_window::search_substring(QString string)
+{
+    std::cerr << string.data();
+}
 
 void main_window::select_directory()
 {
     QString dir = QFileDialog::getExistingDirectory(this, "Select Directory for Scanning",
                                                     QString(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
-    scan_directory(dir);
+    controller.set_directory(dir);
 }
 
-void main_window::scan_directory(QString const& dir)
+void main_window::scan_directory(QString dir)
 {
     ui->treeWidget->clear();
     setWindowTitle(QString("Directory Content - %1").arg(dir));
@@ -59,4 +68,9 @@ void main_window::scan_directory(QString const& dir)
 void main_window::show_about_dialog()
 {
     QMessageBox::aboutQt(this);
+}
+
+void main_window::on_searchButton_clicked()
+{
+    search_substring(ui->lineEdit->text());
 }

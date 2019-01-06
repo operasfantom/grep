@@ -25,11 +25,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    directory_controller.cpp \
+    trigram_storage.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    directory_controller.h \
+    trigram_storage.h
 
 FORMS += \
         mainwindow.ui
 
+INCLUDEPATH += .
