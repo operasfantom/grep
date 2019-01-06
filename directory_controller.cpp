@@ -89,8 +89,3 @@ void directory_controller::search_substring(QString string)
 {
     storage.search_substring(string);
 }
-
-void directory_controller::receive_search_results(QFileInfoList file_info_list)
-{
-    emit send_search_results(file_info_list);
-}
