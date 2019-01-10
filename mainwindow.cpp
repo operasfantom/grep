@@ -14,7 +14,7 @@ main_window::main_window(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
+    setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry(this)));
 
     ui->treeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -39,7 +39,7 @@ main_window::~main_window()
 
 void main_window::search_substring(QString string)
 {
-    std::cerr << string.data();
+    controller.search_substring(string);
 }
 
 void main_window::select_directory()
