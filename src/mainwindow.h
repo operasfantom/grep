@@ -20,10 +20,14 @@ public:
     ~main_window();
 
      void search_substring(QString string);
+
+	 void disable_actions();
 private slots:
     void select_directory();
-    void scan_directory(QString dir);
     void show_about_dialog();
+	void show_file(QString file_path);
+	void finished_scanning(bool success);
+	void finished_searching(bool success);
 
     void on_searchButton_clicked();
 

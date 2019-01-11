@@ -28,10 +28,17 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="QLineEdit" name="lineEdit"/>
+     <widget class="QLineEdit" name="lineEdit">
+      <property name="visible">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QPushButton" name="searchButton">
+      <property name="visible">
+       <bool>false</bool>
+      </property>
       <property name="text">
        <string>Search!</string>
       </property>
@@ -57,6 +64,20 @@
       </column>
      </widget>
     </item>
+    <item>
+     <widget class="QPushButton" name="cancelButton">
+      <property name="text">
+       <string>Cancel</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -65,7 +86,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>19</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
