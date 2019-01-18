@@ -9,7 +9,7 @@ void trigram_storage::add_trigram(QString trigram) {
 
 QStringList trigram_storage::split_string_for_search(QString string) {
 	QStringList result;
-	if (string.size() >= trigram_storage::T) {
+	if (string.size() >= T) {
 		for (int i = 0; i + T <= string.size(); ++i) {
 			result.push_back(string.mid(i, T));
 		}

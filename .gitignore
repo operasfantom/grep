@@ -2,6 +2,7 @@
 *.json
 *.sln
 *.vcxproj*
+*.bat
 /.qmake.stash  
 **/x64/**
 **/debug/**

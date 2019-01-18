@@ -113,8 +113,8 @@ bool directory_controller::search_substring_in_file(QString file_path, QString s
 	KMP kmp(substring);
 
 	file_iterator iterator(file_path);
-	for (int index = 0; iterator.hasNext(); index ^= 1) {
-		QString string = iterator.next(); //todo string bounds
+	while (iterator.hasNext()) {
+		QString string = iterator.next();
 		for (auto c : string) {
 			if (kmp.load(c)) {
 				return true;

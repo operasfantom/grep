@@ -53,8 +53,6 @@ void test::run(QString string, int expected) {
 	controller.set_directory(GENERATE_FOLDER);
 	QMutexLocker locker(&mutex);
 	cv.wait(&mutex);
-
-	// Q_ASSERT(disconnect(connection));
 }
 
 void test::init() {
@@ -88,6 +86,13 @@ void test::test_subdirectory() {
 	run("ello", 4);
 }
 
+void test::test_one_letter() {
+	create_file("abab");
+	create_file("abacaba");
+	create_file("hello");
+	run("a", 2);
+}
+
 void test::test_case1() {
 	create_file("abacaba");
 	run("abacaba", 1);
@@ -98,8 +103,18 @@ void test::test_case2() {
 	run("a", 3);
 }
 
+void test::test_case3() {
+	create_file("abcdefghijkl");
+	run("abcd", 1);
+}
+
+void test::test_case4() {
+	create_file("abcdefghijkl");
+	run("ijkl", 1);
+}
+
 void test::test_bound() {
-	QString string = QString('a', 4 * 1024 * 1024) + QString("bc");
+	QString string = QString(4 * 1024 * 1024, 'a') + QString("bc");
 	create_file(string, 1);
 	run("abc", 1);
 }
