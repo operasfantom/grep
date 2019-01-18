@@ -44,13 +44,13 @@ main_window::~main_window()
 void main_window::search_substring(QString string)
 {
 	ui->treeWidget->clear();
-	ui->searchButton->setHidden(false);
+	ui->searchButton->setEnabled(false);
 
     controller.search_substring(string);
 }
 
 void main_window::disable_actions() {
-	ui->actionScan_Directory->setVisible(false);
+	ui->actionScan_Directory->setEnabled(false);
 }
 
 void main_window::select_directory()
@@ -61,7 +61,7 @@ void main_window::select_directory()
 	disable_actions();
 
 	ui->treeWidget->clear();
-	ui->actionScan_Directory->setVisible(false);
+	ui->actionScan_Directory->setEnabled(false);
     controller.set_directory(dir);
 }
 
@@ -78,14 +78,14 @@ void main_window::show_file(QString file_path) {
 }
 
 void main_window::finished_scanning(bool success) {
-	ui->actionScan_Directory->setVisible(true);
+	ui->actionScan_Directory->setEnabled(true);
 	
-	ui->lineEdit->setHidden(false);
-	ui->searchButton->setHidden(false);
+	ui->lineEdit->setEnabled(false);
+	ui->searchButton->setEnabled(false);
 }
 
 void main_window::finished_searching(bool success) {
-	ui->searchButton->setHidden(false);
+	ui->searchButton->setEnabled(false);
 }
 
 void main_window::on_searchButton_clicked()

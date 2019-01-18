@@ -2,7 +2,7 @@
 #define TST_TEST_H
 
 #include <QtTest>
-#include <QCoreApplication>
+#include <QWaitCondition>
 
 #include "../src/directory_controller.h"
 
@@ -20,14 +20,25 @@ private:
 
     directory_controller controller;
 
-    QSet<int> group_sizes;
+	int found = 0;
+
+	QMutex mutex;
+	QWaitCondition cv;
+    int expected = -1;
 
     void create_file(QString data, int quantity = 1);
     void create_file_subdirectory(QString data, int quantity = 1);
+	void run(QString string, int expected);
 private slots:
-    void init();
-    void cleanup();
+	void init();
+	void cleanup();
+    void initTestCase();
+    void cleanupTestCase();
     void test_case_empty_folder();
+	void test_subdirectory();
+	void test_case1();
+	void test_case2();
+	void test_bound();
 };
 
 #endif // TST_TEST_H

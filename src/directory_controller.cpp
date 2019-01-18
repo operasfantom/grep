@@ -5,26 +5,27 @@
 #include <QThread>
 
 #include "file_iterator.h"
+#include "KMP.h"
 
 directory_controller::directory_controller(QObject* parent) : QObject(parent) {
 	buffer[0].resize(BUFFER_SIZE);
 	buffer[1].resize(BUFFER_SIZE);
 
-	connect(&watcher, &QFileSystemWatcher::directoryChanged, [this](const QString& path) {
+	/*connect(&watcher, &QFileSystemWatcher::directoryChanged, [this](const QString& path) {
 		this->file_changed(path);
-	});
+	});*/
 }
 
 void directory_controller::set_directory(QString directory_name) {
 	directory = QDir(directory_name);
 	directory.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
-	directory.setSorting(QDir::Size | QDir::Reversed);
+	// directory.setSorting(QDir::Size | QDir::Reversed);
 
 	scan_directory(false);
 }
 
 void directory_controller::add_path(QString dir_info) {
-	watcher.addPath(dir_info);
+	// watcher.addPath(dir_info);
 }
 
 void directory_controller::add_paths() {
@@ -35,12 +36,13 @@ void directory_controller::add_paths() {
 }
 
 void directory_controller::clear_storage() {
-	watcher.removePaths(watcher.directories()); //todo dtor
+	// QStringList remove_paths = watcher.directories();
+	// QStringList failed_list = watcher.removePaths(remove_paths); //todo dtor
 	storage_by_file.clear();
 }
 
 void directory_controller::process_indexed_file(QString file_path, trigram_storage&& storage) {
-	storage_by_file[file_path] = std::move(storage);
+	storage_by_file.insert(file_path, std::make_shared<trigram_storage>(std::move(storage)));
 }
 
 void directory_controller::add_file(QString file_path) {
@@ -108,11 +110,15 @@ void directory_controller::scan_directory(bool sync) {
 }
 
 bool directory_controller::search_substring_in_file(QString file_path, QString substring) const {
+	KMP kmp(substring);
+
 	file_iterator iterator(file_path);
-	while (iterator.hasNext()) {
+	for (int index = 0; iterator.hasNext(); index ^= 1) {
 		QString string = iterator.next(); //todo string bounds
-		if (string.contains(substring)) {
-			return true;
+		for (auto c : string) {
+			if (kmp.load(c)) {
+				return true;
+			}
 		}
 	}
 	return false;
@@ -128,14 +134,13 @@ bool directory_controller::contains_substring(QString file_path, trigram_storage
 void directory_controller::search_substring(QString string) {
 	search_thread = QThread::create([this, string]() mutable {
 		try {
-			string = string.toLower();
+			//string = string.toLower();
 			int i = 0;
 			for (auto it = storage_by_file.begin(); it != storage_by_file.end(); ++it) {
-				if (contains_substring(it.key(), it.value(), string)) {
+				if (contains_substring(it.key(), *(it.value()), string)) {
 					emit send_search_result(it.key());
 				}
-
-				emit set_progress(1.0 * (++i) / storage_by_file.size());
+				emit set_progress(100.0 * (++i) / storage_by_file.size());
 			}
 			emit finished_searching(true);
 		}

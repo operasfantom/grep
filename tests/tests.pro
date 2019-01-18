@@ -6,7 +6,14 @@ TEMPLATE = app
 
 SOURCES +=  \
         tst_test.cpp \
-        ../src/directory_controller.cpp
+        ../src/directory_controller.cpp \
+        ../src/trigram_storage.cpp \
+        ../src/file_iterator.cpp
 
-HEADERS += ../src/directory_controller.h \
-           tst_test.h
+HEADERS += \
+        tst_test.h \
+        ../src/directory_controller.h \
+        ../src/trigram_storage.h \
+        ../src/file_iterator.h
+
+LIBS += -L/../src/

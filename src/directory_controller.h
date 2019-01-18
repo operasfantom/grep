@@ -13,7 +13,7 @@
 //class directory_controller;
 //}
 
-class directory_controller : public QObject {
+class directory_controller final : public QObject {
 Q_OBJECT
 private:
 	void add_path(QString dir_info);
@@ -59,13 +59,13 @@ private:
 
 	//    trigram_storage occurrences_number;
 
-	QFileSystemWatcher watcher;
+	//QFileSystemWatcher watcher;
 
 	const int BUFFER_SIZE = 4 * 1024 * 1024;
 
-	QString buffer[2];
+	mutable QString buffer[2];
 
-	QHash<QString, trigram_storage> storage_by_file;
+    QHash<QString, std::shared_ptr<trigram_storage>> storage_by_file;
 
 	QThread* search_thread;
 

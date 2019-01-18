@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = dirdemo
+TARGET = grep
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -26,15 +26,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    directory_controller.cpp \
-    trigram_storage.cpp
+	directory_controller.cpp \
+	trigram_storage.cpp \
+        file_iterator.cpp \
+        KMP.cpp
 
 HEADERS += \
         mainwindow.h \
-    directory_controller.h \
-    trigram_storage.h
+	directory_controller.h \
+	trigram_storage.h \
+        file_iterator.h \
+        KMP.h
+
 
 FORMS += \
         mainwindow.ui
-
-INCLUDEPATH += .
