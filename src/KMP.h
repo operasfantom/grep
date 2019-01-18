@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿#ifndef KMP_H
+#define KMP_H
+
 #include <QVector>
 
 class KMP {
@@ -15,3 +17,5 @@ public:
 
 	bool load(QChar c);
 };
+
+#endif //KMP_H

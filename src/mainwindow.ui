@@ -29,14 +29,14 @@
     </property>
     <item>
      <widget class="QLineEdit" name="lineEdit">
-      <property name="visible">
+      <property name="enabled">
        <bool>false</bool>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="searchButton">
-      <property name="visible">
+      <property name="enabled">
        <bool>false</bool>
       </property>
       <property name="text">
@@ -57,17 +57,25 @@
         <string>Filename</string>
        </property>
       </column>
-      <column>
-       <property name="text">
-        <string>Size</string>
-       </property>
-      </column>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="cancelButton">
       <property name="text">
        <string>Cancel</string>
+      </property>
+	<property name="enabled">
+	   <bool>false</bool>
+	</property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPlainTextEdit" name="messageLog">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
      </widget>
     </item>

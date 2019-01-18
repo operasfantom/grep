@@ -2,8 +2,12 @@
 
 #include <QString>
 #include <algorithm>
+#include <QMutexLocker>
+
+// QMutex hash_mutex;
 
 void trigram_storage::add_trigram(QString trigram) {
+	// QMutexLocker locker(&hash_mutex);
 	++occurrences_number[trigram];
 }
 

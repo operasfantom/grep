@@ -8,14 +8,17 @@
 #include <thread>
 
 #include "trigram_storage.h"
-
-//namespace Ui {
-//class directory_controller;
-//}
+#include <qthreadpool.h>
 
 class directory_controller final : public QObject {
 Q_OBJECT
 private:
+	enum class State {
+		CANCELLED,
+		IN_PROCESS,
+		COMPLETED
+	};
+
 	void add_path(QString dir_info);
 
 	void add_paths();
@@ -36,6 +39,8 @@ private:
 
 	bool contains_substring(QString file_path, trigram_storage const& storage, QString string) const;
 public:
+	std::atomic<State> state = State::COMPLETED;
+
 	explicit directory_controller(QObject* parent = nullptr);
 
 	virtual ~directory_controller() = default;
@@ -43,6 +48,8 @@ public:
 	void set_directory(QString directory_name);
 
 	void search_substring(QString string);
+
+	void cancel();
 signals:
 	void finished_scanning(bool success);
 
@@ -63,13 +70,15 @@ private:
 
 	const int BUFFER_SIZE = 4 * 1024 * 1024;
 
-	mutable QString buffer[2];
+	mutable QVector<QString> buffer;
 
-    QHash<QString, std::shared_ptr<trigram_storage>> storage_by_file;
+	QHash<QString, std::shared_ptr<trigram_storage>> storage_by_file;
 
 	QThread* search_thread;
 
 	QThread* scan_thread;
+
+	QThreadPool scanning_thread_pool;
 };
 
 #endif // DIRECTORY_CONTROLLER_H

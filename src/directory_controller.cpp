@@ -7,10 +7,25 @@
 #include "file_iterator.h"
 #include "KMP.h"
 
+namespace {
+	class Runnable final : public QRunnable {
+		std::function<void()> f;
+	public:
+		template <typename F>
+		Runnable(F f) : f(f) {}
+
+		void run() override {
+			f();
+		};
+	};
+}
+
 directory_controller::directory_controller(QObject* parent) : QObject(parent) {
+	buffer.resize(2);
 	buffer[0].resize(BUFFER_SIZE);
 	buffer[1].resize(BUFFER_SIZE);
 
+	scanning_thread_pool.setMaxThreadCount(QThread::idealThreadCount() * 10);
 	/*connect(&watcher, &QFileSystemWatcher::directoryChanged, [this](const QString& path) {
 		this->file_changed(path);
 	});*/
@@ -52,21 +67,27 @@ void directory_controller::add_file(QString file_path) {
 		int odd = 0;
 		bool is_first_block = true;
 		file_iterator iterator(file_path);
-		while (iterator.hasNext()) {
-			buffer[odd] = iterator.next();
-			buffer[odd] = buffer[odd].toLower();
-			if (is_first_block) {
-				storage.add_data(buffer[odd]);
+		try {
+			while (iterator.hasNext()) {
+				buffer[odd] = iterator.next();
+				// buffer[odd] = buffer[odd].toLower();
+				// scanning_thread_pool.start(new Runnable([is_first_block, &storage, buffer = this->buffer, odd]() mutable {
+					if (is_first_block) {
+						storage.add_data(buffer[odd]);
+					}
+					else {
+						storage.add_data(buffer[odd ^ 1], buffer[odd]);
+					}
+				// }));
+				odd ^= 1;
+				is_first_block = false;
 			}
-			else {
-				storage.add_data(buffer[odd ^ 1], buffer[odd]);
+			// scanning_thread_pool.waitForDone();
+			if (storage.is_text()) {
+				process_indexed_file(file_path, std::move(storage));
 			}
-			odd ^= 1;
-			is_first_block = false;
 		}
-		if (storage.is_text()) {
-			process_indexed_file(file_path, std::move(storage));
-		}
+		catch (...) {}
 	}
 }
 
@@ -77,33 +98,41 @@ void directory_controller::remove_file(QString file_path) {
 void directory_controller::scan_directory0() {
 	clear_storage();
 	if (directory.exists()) {
-		QDirIterator it(directory.path(), QDir::Files, QDirIterator::Subdirectories);
-		while (it.hasNext()) {
-			add_file(it.next());
+		if (state == State::COMPLETED) {
+			state = State::IN_PROCESS;
+			QDirIterator it(directory.path(), QDir::Files, QDirIterator::Subdirectories);
+			// int i = 0;
+			while (it.hasNext() && state == State::IN_PROCESS) {
+				add_file(it.next());
+				// emit set_progress(100.0 * (++i) / total_files_count);
+			}
+			if (state == State::IN_PROCESS) {
+				state = State::COMPLETED;
+			}
 		}
 	}
 }
 
 void directory_controller::scan_directory(bool sync) {
-	if (sync) {
+	auto f = [this]() {
 		try {
 			scan_directory0();
-			emit finished_scanning(true);
+
+			bool success = (state == State::COMPLETED);
+			state = State::COMPLETED;
+			emit finished_scanning(success);
 		}
 		catch (...) {
+			state = State::COMPLETED;
 			emit finished_scanning(false);
 		}
+	};
+	if (sync) {
+		f();
 	}
 	else {
-		scan_thread = QThread::create([this]() {
-			try {
-				scan_directory0();
-				add_paths();
-				emit finished_scanning(true);
-			}
-			catch (...) {
-				emit finished_scanning(false);
-			}
+		scan_thread = QThread::create([this, f]() {
+			f();
 		});
 		scan_thread->start();
 	}
@@ -133,22 +162,34 @@ bool directory_controller::contains_substring(QString file_path, trigram_storage
 
 void directory_controller::search_substring(QString string) {
 	search_thread = QThread::create([this, string]() mutable {
-		try {
-			//string = string.toLower();
-			int i = 0;
-			for (auto it = storage_by_file.begin(); it != storage_by_file.end(); ++it) {
-				if (contains_substring(it.key(), *(it.value()), string)) {
-					emit send_search_result(it.key());
+		if (state == State::COMPLETED) {
+			state = State::IN_PROCESS;
+			try {
+				//string = string.toLower();
+				int i = 0;
+				for (auto it = storage_by_file.begin(); it != storage_by_file.end() && state == State::IN_PROCESS; ++it
+				) {
+					if (contains_substring(it.key(), *(it.value()), string)) {
+						emit send_search_result(it.key());
+					}
+					emit set_progress(100.0 * (++i) / storage_by_file.size());
 				}
-				emit set_progress(100.0 * (++i) / storage_by_file.size());
+
+				bool success = state == State::IN_PROCESS;
+				state = State::COMPLETED;;
+				emit finished_searching(success);
 			}
-			emit finished_searching(true);
-		}
-		catch (...) {
-			emit finished_searching(false);
+			catch (...) {
+				state = State::COMPLETED;
+				emit finished_searching(false);
+			}
 		}
 	});
 	search_thread->start();
+}
+
+void directory_controller::cancel() {
+	state = State::CANCELLED;
 }
 
 void directory_controller::file_changed(QString file_path) {

@@ -1,5 +1,6 @@
-#pragma once
-#include <QString>
+#ifndef FILE_ITERATOR_H
+#define FILE_ITERATOR_H
+
 #include <QFile>
 #include <QTextStream>
 
@@ -20,3 +21,4 @@ public:
 	
 };
 
+#endif //FILE_ITERATOR_H
