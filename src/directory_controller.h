@@ -34,7 +34,7 @@ private:
 
 	bool contains_substring(QString file_path, trigram_storage const& storage, QString string) const;
 public:
-	std::atomic<State> state = State::COMPLETED;
+    std::atomic<State> state{State::COMPLETED};
 
 	explicit directory_controller(QObject* parent = nullptr);
 
