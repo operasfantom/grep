@@ -24,9 +24,12 @@ private:
 	QMutex mutex;
 	QWaitCondition cv;
 	int expected = -1;
+	QString last_file_name;
 
+	void create_file(QString file_name, QString data);
 	void create_file(QString data, int quantity = 1);
 	void create_file_subdirectory(QString data, int quantity = 1);
+	void remove_last_file();
 	void run(QString string, int expected);
 private slots:
 	void init();
@@ -41,6 +44,7 @@ private slots:
 	void test_case3();
 	void test_case4();
 	void test_bound();
+	void test_watcher();
 };
 
 #endif // TST_TEST_H

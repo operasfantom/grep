@@ -18,11 +18,6 @@ private:
 		IN_PROCESS,
 		COMPLETED
 	};
-
-	void add_path(QString dir_info);
-
-	void add_paths();
-
 	void clear_storage();
 
 	void process_indexed_file(QString file_path, trigram_storage&& storage);
@@ -66,7 +61,7 @@ private:
 
 	//    trigram_storage occurrences_number;
 
-	//QFileSystemWatcher watcher;
+	QFileSystemWatcher watcher;
 
 	const int BUFFER_SIZE = 4 * 1024 * 1024;
 

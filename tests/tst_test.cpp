@@ -6,15 +6,20 @@ test::test() {}
 
 test::~test() {}
 
+void test::create_file(QString file_name, QString data) {
+	QFile file(file_name);
+	Q_ASSERT(file.open(QFile::ReadWrite));
+	file.write(data.toUtf8());
+	file.close();
+
+	last_file_name = file_name;
+}
+
 void test::create_file(QString data, int quantity) {
 	static int id;
 	for (int i = 0; i < quantity; ++i) {
-		QFile file(GENERATE_PATH.filePath(QString::number(++id)));
-		//        qDebug(QFileInfo(file).absoluteFilePath().toUtf8());
-		if (file.open(QFile::ReadWrite)) {
-			file.write(data.toUtf8());
-			file.close();
-		}
+		QString path = GENERATE_PATH.filePath(QString::number(++id));
+		create_file(path, data);
 	}
 }
 
@@ -25,13 +30,14 @@ void test::create_file_subdirectory(QString data, int quantity) {
 	QDir relative_path = GENERATE_PATH.filePath(relative_folder);
 	GENERATE_PATH.mkdir(relative_folder);
 	for (int i = 0; i < quantity; ++i) {
-		QFile file(relative_path.filePath(QString::number(++id)));
-		//        qDebug(QFileInfo(file).absoluteFilePath().toUtf8());
-		if (file.open(QFile::ReadWrite)) {
-			file.write(data.toUtf8());
-			file.close();
-		}
+		QString path = relative_path.filePath(QString::number(++id));
+		create_file(path, data);
 	}
+}
+
+void test::remove_last_file() {
+	QFile file(last_file_name);
+	Q_ASSERT(file.remove());
 }
 
 void test::run(QString string, int expected) {
@@ -56,8 +62,8 @@ void test::run(QString string, int expected) {
 }
 
 void test::init() {
-	GENERATE_PATH.removeRecursively();
-	CURRENT_PATH.mkdir(GENERATE_FOLDER);
+	Q_ASSERT(GENERATE_PATH.removeRecursively());
+	Q_ASSERT(CURRENT_PATH.mkdir(GENERATE_FOLDER));
 
 
 	connect(&controller, &directory_controller::send_search_result, [&](QString file_path) {
@@ -65,8 +71,9 @@ void test::init() {
 	});
 }
 
-void test::cleanup() {
-	Q_ASSERT(GENERATE_PATH.removeRecursively());
+void test::cleanup() {	
+	// Q_ASSERT(GENERATE_PATH.removeRecursively());
+	GENERATE_PATH.removeRecursively();
 
 	found = 0;
 	Q_ASSERT(controller.disconnect());
@@ -117,6 +124,15 @@ void test::test_bound() {
 	QString string = QString(4 * 1024 * 1024, 'a') + QString("bc");
 	create_file(string, 1);
 	run("abc", 1);
+}
+
+void test::test_watcher() {
+	const int N = 3;
+	create_file("abacaba", 3);
+	run("ab", 3);
+	found = 0;
+	remove_last_file();
+	run("ab", 2);
 }
 
 QTEST_MAIN(test)

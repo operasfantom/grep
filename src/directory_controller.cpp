@@ -26,9 +26,9 @@ directory_controller::directory_controller(QObject* parent) : QObject(parent) {
 	buffer[1].resize(BUFFER_SIZE);
 
 	scanning_thread_pool.setMaxThreadCount(QThread::idealThreadCount() * 10);
-	/*connect(&watcher, &QFileSystemWatcher::directoryChanged, [this](const QString& path) {
-		this->file_changed(path);
-	});*/
+	connect(&watcher, &QFileSystemWatcher::fileChanged, [this](const QString& file_path) {
+		this->file_changed(file_path);
+	});
 }
 
 void directory_controller::set_directory(QString directory_name) {
@@ -39,25 +39,18 @@ void directory_controller::set_directory(QString directory_name) {
 	scan_directory(false);
 }
 
-void directory_controller::add_path(QString dir_info) {
-	// watcher.addPath(dir_info);
-}
-
-void directory_controller::add_paths() {
-	QDirIterator it(directory.path(), QDir::Dirs, QDirIterator::Subdirectories);
-	while (it.hasNext()) {
-		add_path(it.next());
-	}
-}
-
 void directory_controller::clear_storage() {
-	// QStringList remove_paths = watcher.directories();
-	// QStringList failed_list = watcher.removePaths(remove_paths); //todo dtor
+	QStringList remove_paths = watcher.directories();
+	if (!remove_paths.isEmpty()) {
+		QStringList failed_list = watcher.removePaths(remove_paths);
+	}
 	storage_by_file.clear();
 }
 
 void directory_controller::process_indexed_file(QString file_path, trigram_storage&& storage) {
 	storage_by_file.insert(file_path, std::make_shared<trigram_storage>(std::move(storage)));
+	
+	watcher.addPath(file_path);
 }
 
 void directory_controller::add_file(QString file_path) {
@@ -65,22 +58,16 @@ void directory_controller::add_file(QString file_path) {
 	if (file.open(QFile::ReadOnly)) {
 		trigram_storage storage;
 		int odd = 0;
-		bool is_first_block = true;
+		buffer[1] = "";
 		file_iterator iterator(file_path);
 		try {
 			while (iterator.hasNext()) {
 				buffer[odd] = iterator.next();
 				// buffer[odd] = buffer[odd].toLower();
 				// scanning_thread_pool.start(new Runnable([is_first_block, &storage, buffer = this->buffer, odd]() mutable {
-					if (is_first_block) {
-						storage.add_data(buffer[odd]);
-					}
-					else {
-						storage.add_data(buffer[odd ^ 1], buffer[odd]);
-					}
+				storage.add_data(buffer[odd ^ 1], buffer[odd]);				
 				// }));
 				odd ^= 1;
-				is_first_block = false;
 			}
 			// scanning_thread_pool.waitForDone();
 			if (storage.is_text()) {
@@ -194,10 +181,8 @@ void directory_controller::cancel() {
 
 void directory_controller::file_changed(QString file_path) {
 	QFile file(file_path);
+	remove_file(file_path);
 	if (file.exists()) {
 		add_file(file_path);
-	}
-	else {
-		remove_file(file_path);
-	}
+	}	
 }
