@@ -39,7 +39,7 @@ private:
 
 	directory_controller controller;
 
-	const QRegExp input_reg_exp = QRegExp("([a-z,0-9, ])");
+	//const QRegExp input_reg_exp = QRegExp("([a-z,0-9, ])");
 };
 
 #endif // MAINWINDOW_H

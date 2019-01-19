@@ -13,15 +13,15 @@ void main_window::show_message(QString string) {
 }
 
 bool main_window::validate_input(QString string) {
-	QRegExp input_reg_exp("([a-z,A-Z,0-9]+)");
+	//QRegExp input_reg_exp("([a-z,A-Z,0-9]+)");
 	if (string.isEmpty()) {
 		show_message("input is empty!");
 		return false;
 	}
-	if (!input_reg_exp.exactMatch(string)) {
+	/*if (!input_reg_exp.exactMatch(string)) {
 		show_message("input should satisfy the following regexp: " + input_reg_exp.pattern());
 		return false;
-	}
+	}*/
 	return true;
 }
 
