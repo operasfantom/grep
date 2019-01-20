@@ -62,8 +62,8 @@ void test::run(QString string, int expected) {
 }
 
 void test::init() {
-	Q_ASSERT(GENERATE_PATH.removeRecursively());
-	Q_ASSERT(CURRENT_PATH.mkdir(GENERATE_FOLDER));
+	GENERATE_PATH.removeRecursively();
+	CURRENT_PATH.mkdir(GENERATE_FOLDER);
 
 
 	connect(&controller, &directory_controller::send_search_result, [&](QString file_path) {
